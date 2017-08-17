@@ -19,8 +19,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.support.design.widget.Snackbar;
 
-import net.andreysergeev.mycourse.mycourse.mapoverlay.StartPathButton;
-import net.andreysergeev.mycourse.mycourse.mapoverlay.StopPathButton;
+import net.andreysergeev.mycourse.mycourse.mapoverlay.ButtonOverlay;
 
 import org.osmdroid.config.Configuration;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
@@ -33,8 +32,7 @@ import org.osmdroid.views.overlay.compass.InternalCompassOrientationProvider;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements
-        LocationListener, StartPathButton.IOnTouchListener/*,
-        StopPathButton.IOnTouchListener*/ {
+        LocationListener, ButtonOverlay.IOnTouchEvent {
 
     private final static String[] PERMISSION_LOCATION = { Manifest.permission.ACCESS_COARSE_LOCATION,
             Manifest.permission.ACCESS_FINE_LOCATION};
@@ -42,14 +40,17 @@ public class MainActivity extends AppCompatActivity implements
     private final static long GPS_LOCATION_UPDATE_TIME = 500; //0.5 * 1000;
     private final static float GPS_LOCATION_UPDATE_DISTANCE = 10f;
 
+    private final static int ID_BTN_START = 1;
+    private final static int ID_BTN_STOP = 2;
+
     private LocationManager locationManager = null;
 
     private MapView map;
     private Polyline path;
     private ArrayList<GeoPoint> pathPoints = new ArrayList<>();
 
-    private StartPathButton startPathButton;
-    private StopPathButton stopPathButton;
+    private ButtonOverlay startPathButton;
+    private ButtonOverlay stopPathButton;
     private boolean onCourse = false;
 
     @Override
@@ -77,13 +78,17 @@ public class MainActivity extends AppCompatActivity implements
         path.setWidth(2f);
         map.getOverlays().add(path);
 
-        startPathButton = new StartPathButton(getApplicationContext(), this);
+        startPathButton = new ButtonOverlay(getApplicationContext(), ID_BTN_START ,this);
+        startPathButton.setSize(40, 40);
+        startPathButton.setDrawable(getDrawable(R.drawable.ic_directions_walk_black_24dp));
         startPathButton.setCenter(35, 105);
         startPathButton.setEnabled(true);
         map.getOverlays().add(startPathButton);
 
-        stopPathButton = new StopPathButton(getApplicationContext(), null);
-        stopPathButton.setCenter(35,70);
+        stopPathButton = new ButtonOverlay(getApplicationContext(), ID_BTN_STOP, this);
+        stopPathButton.setSize(40, 40);
+        stopPathButton.setDrawable(getDrawable(R.drawable.ic_transfer_within_a_station_black_24dp));
+        stopPathButton.setCenter(35,105);
         stopPathButton.setEnabled(false);
         map.getOverlays().add(stopPathButton);
 
@@ -185,11 +190,34 @@ public class MainActivity extends AppCompatActivity implements
     }
 
     @Override
-    public void onTouchStartBtn() {
+    public void onTouch(int id) {
+
+        if (id == ID_BTN_START) {
+            processStartBtn();
+        } else if (id == ID_BTN_STOP) {
+            processStopBtn();
+        }
+
+    }
+
+    private void processStartBtn() {
         startPathButton.setEnabled(false);
         onCourse = true;
         stopPathButton.setEnabled(true);
     }
+
+    private void processStopBtn() {
+        startPathButton.setEnabled(true);
+        stopPathButton.setEnabled(false);
+        onCourse = false;
+    }
+
+    /*@Override
+    public void onTouchStartBtn() {
+        startPathButton.setEnabled(false);
+        onCourse = true;
+        stopPathButton.setEnabled(true);
+    }*/
 
     /*@Override
     public void onTouchStopBtn() {

@@ -6,65 +6,80 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.view.MotionEvent;
 
-import net.andreysergeev.mycourse.mycourse.R;
 import net.andreysergeev.mycourse.mycourse.utils.Utils;
 
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.overlay.Overlay;
 
+import java.util.Random;
+
 /**
  * Created by andrejsergeev on 17.08.17.
  */
 
-public class StartPathButton extends Overlay {
+public class ButtonOverlay extends Overlay {
 
     private Context context;
+    private IOnTouchEvent listener;
+
+    private int width;
+    private int height;
+    private Drawable drawable;
+    private Bitmap bitmap;
     private Paint paint;
-    private Bitmap bitmap = null;
-    private Matrix matrix = null;
 
-    private float btnCenterX = 35f;
-    private float btnCenterY = 35f;
-
-    private final float mButtonFrameCenterX;
-    private final float mButtonFrameCenterY;
+    private float btnCenterX;
+    private float btnCenterY;
 
     private float mScale;
 
-    private IOnTouchListener listener = null;
+    private float mButtonFrameCenterX;
+    private float mButtonFrameCenterY;
 
-    public StartPathButton(Context context, @Nullable IOnTouchListener listener) {
+    private Matrix matrix;
+
+    private int id;
+
+    public ButtonOverlay(Context context, @Nullable int id, @Nullable IOnTouchEvent listener) {
+
+        super();
+
         this.context = context;
-        this.paint = new Paint();
-        this.paint.setColor(Color.BLUE);
-
-        Drawable drawable =  this.context.getDrawable(R.drawable.ic_directions_walk_black_24dp);
-
-        this.bitmap = Utils.drawableToBitmap(drawable, 120, 120, Color.WHITE);
-
-        mButtonFrameCenterX = bitmap.getWidth() / 2 - 0.5f;
-        mButtonFrameCenterY = bitmap.getHeight() / 2 - 0.5f;
+        this.listener = listener;
+        this.id = getId(id);
 
         mScale = context.getResources().getDisplayMetrics().density;
         matrix = new Matrix();
 
-        this.listener = listener;
+        paint = new Paint();
+    }
+
+    public void setSize(int width, int height) {
+        this.width = (int)(width * mScale);
+        this.height = (int)(height * mScale);
+    }
+
+    public void setDrawable(Drawable drawable) {
+        this.drawable = drawable;
+
+        this.bitmap = Utils.drawableToBitmap(drawable, width, height, Color.WHITE);
+
+        mButtonFrameCenterX = this.bitmap.getWidth() / 2 - 0.5f;
+        mButtonFrameCenterY = this.bitmap.getHeight() / 2 - 0.5f;
     }
 
     public void setCenter(float x, float y) {
-        btnCenterX = x;
-        btnCenterY = y;
+        this.btnCenterX = x;
+        this.btnCenterY = y;
     }
 
     @Override
     public void draw(Canvas c, MapView osmv, boolean shadow) {
-
         if (shadow || !isEnabled()) {
             return;
         }
@@ -80,7 +95,6 @@ public class StartPathButton extends Overlay {
         c.concat(matrix);
         c.drawBitmap(bitmap, 0, 0, paint);
         c.restore();
-
     }
 
     @Override
@@ -98,7 +112,8 @@ public class StartPathButton extends Overlay {
 
             if (rect.contains(event.getX(), event.getY())) {
                 if (this.listener != null) {
-                    this.listener.onTouchStartBtn();
+                    this.listener.onTouch(this.id);
+                    return true;
                 }
             }
 
@@ -108,15 +123,15 @@ public class StartPathButton extends Overlay {
         return super.onTouchEvent(event, mapView);
     }
 
-    @Override
-    public void onDetach(MapView mapView) {
+    private int getId(@Nullable Integer id) {
+        if (id == null) {
+            return (new Random()).nextInt();
+        }
 
-        this.bitmap.recycle();
-
-        super.onDetach(mapView);
+        return id;
     }
 
-    public interface IOnTouchListener {
-        void onTouchStartBtn();
+    public interface IOnTouchEvent {
+        void onTouch(int id);
     }
 }
