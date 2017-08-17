@@ -106,7 +106,7 @@ public class ButtonOverlay extends Overlay {
 
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
 
-            RectF rect = new RectF(0f,0f,120f,120f);
+            RectF rect = new RectF(0f,0f,width,height);
 
             matrix.mapRect(rect);
 
