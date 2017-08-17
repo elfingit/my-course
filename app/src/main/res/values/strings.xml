@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">My Course</string>
+    <string name="gps_settings">GPS Settings</string>
+    <string name="gps_not_enabled">GPS not enabled</string>
+    <string name="location_permission">Location permission</string>
+    <string name="ok">Ok</string>
 </resources>
